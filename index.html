@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&G Utilidades & Fragrâncias</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<style>
+    .img-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    background: #F9F9F9;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    transition: transform 0.4s ease;
+}
+
+.product-card:hover .img-container img {
+    transform: scale(1.03);
+}
+</style>
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <!-- Estrutura da Logo: Apenas a imagem e o subtítulo -->
+            <div class="brand-wrapper">
+                
+                <img src="./179683.png" alt="Logo da Empresa" class="brand-logo-img">
+                <div class="logo">
+                    <span class="logo-subtitle">UTILIDADES & FRAGRÂNCIAS</span>
+                </div>
+            </div>
+            
+            <div class="search-wrapper">
+                <input type="text" id="search-input" placeholder="O que você procura hoje?">
+                <button onclick="searchProducts()"><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="header-actions">
+                <button class="cart-toggle-btn" onclick="toggleCart()">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span id="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="category-nav">
+        <div class="container">
+            <ul id="category-list">
+                <li><a href="#" class="active" onclick="filterCategory('all', this)">Todos os Produtos</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1>M&G Utilidades e Fragrâncias</h1>
+            <p>Variedade, economia e fragrâncias que inspiram.</p>
+           
+        </div>
+    </section>
+
+    <main class="container main-content">
+        <div class="section-header">
+            <h2 id="section-title">Nossa Seleção</h2>
+            <div class="divider"></div>
+        </div>
+        
+        <div class="product-grid" id="product-grid">
+            <!-- Produtos renderizados aqui via JS -->
+        </div>
+    </main>
+
+    <div class="cart-backdrop" id="cart-overlay" onclick="closeCartOutside(event)">
+        <div class="cart-sidebar">
+            <div class="cart-header">
+                <h3><i class="fas fa-shopping-bag"></i> Seu Pedido</h3>
+                <button class="close-cart" onclick="toggleCart()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="cart-items-container" id="cart-items">
+                <!-- Itens do carrinho aqui -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>Total estimado:</span>
+                    <strong>R$ <span id="cart-total-value">0,00</span></strong>
+                </div>
+                <button class="btn-checkout" onclick="checkout()">
+                    <i class="fab fa-whatsapp"></i> Finalizar no WhatsApp
+                </button>
+                <p class="checkout-note">* O pagamento será combinado diretamente com o vendedor.</p>
+            </div>
+        </div>
+    </div>
+
+    <a href="(#)" class="floating-whatsapp" id="floating-wa" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <footer class="main-footer">
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <h3 id="footer-logo">M&G Utilidades</h3>
+                <p>Sofisticação e praticidade em cada detalhe.</p>
+            </div>
+            <div class="footer-contact">
+                <h4>Atendimento</h4>
+                <p><i class="fab fa-whatsapp"></i> <span id="footer-phone">Carregando...</span></p>
+                <p><i class="fas fa-envelope"></i> marcuszorzetti@gmail.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span id="current-year"></span> M&G Utilidades. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script type="module">
+
+        window.filterCategory = filterCategory;
+window.searchProducts = searchProducts;
+window.toggleCart = toggleCart;
+window.closeCartOutside = closeCartOutside;
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.changeQty = changeQty;
+window.checkout = checkout;
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBGORHPeHqpzW1WCRaVQ3o4vNWCGhzxLXg",
+  authDomain: "papai-d56a6.firebaseapp.com",
+  databaseURL: "https://papai-d56a6-default-rtdb.firebaseio.com",
+  projectId: "papai-d56a6",
+  storageBucket: "papai-d56a6.firebasestorage.app",
+  messagingSenderId: "421865458800",
+  appId: "1:421865458800:web:dcc7b7948bbb9381cdb8b5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+        let products = [];
+        let categories = [];
+        let settings = JSON.parse(localStorage.getItem('mg_settings')) || { name: 'M&G', wa: '(62) 99217-7990' };
+        let cart = JSON.parse(localStorage.getItem('mg_cart')) || [];
+
+        // 2. CONFIGURAÇÕES DA PÁGINA
+        document.getElementById('footer-logo').textContent = settings.name + ' Utilidades & Fragrâncias';
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        const waNumberOnly = settings.wa.replace(/\D/g,'');
+        document.getElementById('floating-wa').href = `https://wa.me/${waNumberOnly}?text=Olá!%20Gostaria%20de%20tirar%20uma%20dúvida.`;
+        document.getElementById('footer-phone').textContent = settings.wa;
+
+        //renderizaçao das categorias
+        function loadFirebaseData() {
+
+    onValue(ref(db, "categories"), (snapshot) => {
+
+        const data = snapshot.val();
+
+        categories = [];
+
+        const catList =
+        document.getElementById("category-list");
+
+        catList.innerHTML = `
+        <li>
+            <a href="#"
+               class="active"
+               onclick="filterCategory('all', this)">
+               Todos os Produtos
+            </a>
+        </li>
+        `;
+
+        if (data) {
+
+            Object.entries(data).forEach(([id, cat]) => {
+
+                categories.push({
+                    id,
+                    ...cat
+                });
+
+                catList.innerHTML += `
+                <li>
+                    <a href="#"
+                       onclick="filterCategory('${cat.name}', this)">
+                       ${cat.name}
+                    </a>
+                </li>
+                `;
+            });
+        }
+
+    });
+
+    onValue(ref(db, "products"), (snapshot) => {
+
+        const data = snapshot.val();
+
+        products = [];
+
+        if (data) {
+
+            Object.entries(data).forEach(([id, p]) => {
+
+                products.push({
+                    id,
+                    ...p
+                });
+
+            });
+
+        }
+
+        renderProducts();
+
+    });
+
+}
+
+        // 4. RENDERIZAÇÃO DE PRODUTOS
+        function renderProducts(filter = 'all', searchQuery = '') {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            
+            let filtered = products.filter(p => p.active);
+            if (filter !== 'all') filtered = filtered.filter(p => p.category === filter);
+            if (searchQuery) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-store"></i><h3>Catálogo em preparação</h3><p>Novos produtos serão adicionados em breve.</p></div>`;
+                return;
+            }
+
+            filtered.forEach(p => {
+                const img = p.image || 'https://via.placeholder.com/400x400?text=Sem+Foto';
+                const promoBadge = p.promo ? '<span class="promo-badge">Destaque</span>' : '';
+                
+                grid.innerHTML += `
+                    <div class="product-card">
+                        <div class="img-container">
+                            ${promoBadge}
+                            <img src="${img}" alt="${p.name}" loading="lazy">
+                        </div>
+                        <div class="product-info">
+                            <span class="product-cat">${p.category}</span>
+                            <h3 class="product-name">${p.name}</h3>
+                            <div class="price-row">
+                                <span class="price">R$ ${parseFloat(p.price).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                            <button class="btn-add-cart" onclick="addToCart('${p.id}')">
+                                Adicionar <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterCategory(cat, element) { 
+            document.querySelectorAll('#category-list a').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            
+            document.getElementById('section-title').textContent = cat === 'all' ? 'Nossa Seleção' : cat;
+            document.getElementById('search-input').value = '';
+            renderProducts(cat); 
+        }
+
+        function searchProducts() { 
+            const q = document.getElementById('search-input').value;
+            document.querySelectorAll('#category-list a').forEach(el => el.classList.remove('active'));
+            document.getElementById('section-title').textContent = q ? `Buscando por: "${q}"` : 'Nossa Seleção';
+            renderProducts('all', q); 
+        }
+
+        // 5. LÓGICA DO CARRINHO
+        function toggleCart() {
+            const overlay = document.getElementById('cart-overlay');
+            overlay.classList.toggle('active');
+            if(overlay.classList.contains('active')) updateCartUI();
+        }
+
+        function closeCartOutside(e) {
+            if(e.target.id === 'cart-overlay') toggleCart();
+        }
+
+        function addToCart(id) {
+            const prod = products.find(p => p.id === id);
+            if(!prod) return;
+            
+            const existing = cart.find(item => item.id === id);
+            if(existing) existing.qty++;
+            else cart.push({ ...prod, qty: 1 });
+            
+            saveCart();
+            updateCartUI();
+            
+            const cartBtn = document.querySelector('.cart-toggle-btn');
+            cartBtn.style.transform = 'scale(1.2)';
+            setTimeout(() => cartBtn.style.transform = 'scale(1)', 200);
+            
+            document.getElementById('cart-overlay').classList.add('active');
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            saveCart();
+            updateCartUI();
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if(item) {
+                item.qty += delta;
+                if(item.qty <= 0) removeFromCart(id);
+                else { saveCart(); updateCartUI(); }
+            }
+        }
+
+        function saveCart() { localStorage.setItem('mg_cart', JSON.stringify(cart)); }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items');
+            const count = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total-value');
+            
+            container.innerHTML = '';
+            let total = 0;
+            let qtyTotal = 0;
+
+            if(cart.length === 0) {
+                container.innerHTML = '<div class="empty-cart" style="text-align:center; color:#888; margin-top:20px;"><p>Seu carrinho está vazio.</p></div>';
+            }
+
+            cart.forEach(item => {
+                const itemTotal = item.price * item.qty;
+                total += itemTotal;
+                qtyTotal += item.qty;
+                const img = item.image || 'https://via.placeholder.com/80?text=Foto';
+                
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${img}" alt="${item.name}">
+                        <div class="cart-item-details">
+                            <h4>${item.name}</h4>
+                            <span class="cart-item-price">R$ ${parseFloat(item.price).toFixed(2).replace('.', ',')}</span>
+                            <div class="qty-controls">
+                                <button onclick="changeQty('${item.id}', -1)">-</button>
+                                <span>${item.qty}</span>
+                                <button onclick="changeQty('${item.id}', 1)">+</button>
+                            </div>
+                        </div>
+                        <button class="remove-item" onclick="removeFromCart('${item.id}')"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+            });
+
+            count.textContent = qtyTotal;
+            totalEl.textContent = total.toFixed(2).replace('.', ',');
+        }
+
+        // 6. FINALIZAÇÃO NO WHATSAPP
+        function checkout() {
+            if(cart.length === 0) {
+                alert("Adicione alguns produtos ao carrinho primeiro!");
+                return;
+            }
+            
+            let text = `*NOVO PEDIDO - ${settings.name}*\n\nOlá, gostaria de fechar este pedido:\n\n`;
+            let total = 0;
+            
+            cart.forEach(item => {
+                const sub = item.price * item.qty;
+                text += `🛍️ *${item.name}*\n`;
+                text += `   Qtd: ${item.qty} un.\n`;
+                text += `   Valor: R$ ${sub.toFixed(2).replace('.', ',')}\n\n`;
+                total += sub;
+            });
+            
+            const dataAtual = new Date().toLocaleString('pt-BR');
+            text += `➖➖➖➖➖➖➖➖\n`;
+            text += `💰 *TOTAL A PAGAR: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+            text += `📅 Data: ${dataAtual}\n`;
+            text += `\nAguardo instruções para pagamento e entrega!`;
+            
+            const encodedText = encodeURIComponent(text);
+            const waLink = `https://wa.me/${settings.wa.replace(/\D/g,'')}?text=${encodedText}`;
+            
+            cart = [];
+            saveCart();
+            updateCartUI();
+            toggleCart();
+            
+            window.open(waLink, '_blank');
+        }
+
+        // 7. INICIALIZAR LOJA
+        loadFirebaseData();
+        updateCartUI();
+
+        window.products = products;
+        window.categories = categories;
+
+        console.log("Firebase conectado");
+    </script>
+</body>
+</html>
