@@ -610,3 +610,90 @@ body {
         padding-bottom: 5px !important;
     }
 }
+
+
+
+/* CORREÇÃO DEFINITIVA MOBILE */
+
+@media (max-width: 768px){
+
+    .main-header{
+        padding: 12px 0 !important;
+    }
+
+    .header-container{
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+
+    .search-wrapper{
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .hero-section{
+        height: 220px !important;
+        text-align: center !important;
+    }
+
+    .hero-content h1{
+        font-size: 26px !important;
+    }
+
+    .hero-content p{
+        font-size: 14px !important;
+    }
+
+    .category-nav{
+        display: block !important;
+        position: relative !important;
+        top: auto !important;
+        margin: 0 !important;
+        padding: 12px 0 !important;
+        background: #fff !important;
+        z-index: 1 !important;
+    }
+
+    #category-list{
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 15px !important;
+        padding: 0 15px !important;
+    }
+
+    #category-list::-webkit-scrollbar{
+        display:none;
+    }
+
+    .main-content{
+        padding: 30px 15px !important;
+    }
+
+    .product-grid{
+        grid-template-columns: repeat(2,1fr) !important;
+        gap: 15px !important;
+    }
+
+    .img-container{
+        height: 170px !important;
+    }
+
+    .product-info{
+        padding: 12px !important;
+    }
+
+    .product-name{
+        font-size: 13px !important;
+    }
+
+    .price{
+        font-size: 18px !important;
+    }
+
+    .btn-add-cart{
+        font-size: 12px !important;
+        padding: 10px !important;
+    }
+}
