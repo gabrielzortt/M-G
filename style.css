@@ -524,4 +524,33 @@ body {
 }
 
 .empty-state h3{margin-top:15px;font-size:24px;color:#1F4E5F;}
-.empty-state p{margin-top:10px;color:#777;font-size:15px;}
+.empty-state p{margin-top:10px;color:#777;font-size:15px;}]
+
+@media (max-width: 768px) {
+
+    .header-container {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 0;
+    }
+
+    .brand-wrapper {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search-wrapper {
+        width: 100%;
+        max-width: 100%;
+        order: 3;
+    }
+
+    .header-actions {
+        order: 2;
+    }
+
+    .category-nav {
+        margin-top: 10px;
+    }
+
+}
